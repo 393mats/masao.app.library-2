@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="./css/mal.css">
+  <script type="text/javascript" src="./src/mal.js"></script>
+  <title>masao.app.librar version2</title>
+</head>
+<body>
+  <!-- Editor -->
+  <div id="edt"></div>
+
+  <br>
+
+  <div id="plt1"></div>
+
+  <br>
+
+  <button onclick="test()">TEST</button>
+
+  <button onclick="test2()">TEST2</button>
+
+<script>
+
+new mal.init({
+  "editor": {
+    "id": "edt",
+  },
+  "palette": {
+    "id-1": "plt1",
+    "parts": "parts.png"
+  }
+});
+
+function test(){
+  document.getElementById("plt1").style.width = "512px";
+}
+
+function test2(){
+  mal.test();
+}
+</script>
+
+</body>
+</html>
