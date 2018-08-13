@@ -6,7 +6,7 @@ body {
   width: 512px;
   height: 320px;
   background: cyan;
-  overflow: hidden;
+  overflow: scroll;
   border: solid 1px black;
   position: relative;
 }
