@@ -3,6 +3,7 @@ var mal;
     mal.version = "1.0";
     var lang = "ja";
     var chip = 0;
+    var chip2 = "..";
     var map;
     var cvs0;
     var ctx0;
@@ -11,10 +12,16 @@ var mal;
     var cvs2;
     var ctx2;
     var cvsp = new Array();
-    ;
     var ctxp = new Array();
+    var cvsp2 = new Array();
+    ;
+    var ctxp2 = new Array();
     ;
     var pimg;
+    var pimg2;
+    function getdoubleDigestNumber(num) {
+        return ("0" + num).slice(-2);
+    }
     var mapdata = (function () {
         function mapdata() {
             this.map0 = new Array();
@@ -43,6 +50,8 @@ var mal;
     (function (palette) {
         var plt_chip_data = ".A98BCDHIJEFOGPQWXR{}abcdefghijz[]<>5647Y+-*/KLMNuvwxUV12nmopqrstklySTZ3";
         palette.plt_chips = plt_chip_data.split("");
+        var plt2_chip_data = "abcdef";
+        palette.plt2_chips = plt2_chip_data.split("");
         palette.plt_description = {
             "ja": {
                 ".": "空白",
@@ -141,6 +150,17 @@ var mal;
             ctxp[id].fillRect(0, 0, 32, 32);
         }
         mouseEvent.plt1_mDown = plt1_mDown;
+        function plt2_mDown(e) {
+            var id = e.target.id.slice(4);
+            chip2 = id;
+            if (id == "00")
+                chip2 = "..";
+            console.log("down", chip2);
+            Redraw(2);
+            ctxp2[id].fillStyle = "rgba(" + [255, 0, 0, 0.5] + ")";
+            ctxp2[id].fillRect(0, 0, 32, 32);
+        }
+        mouseEvent.plt2_mDown = plt2_mDown;
         function edt_mDown(e) {
             var rect = e.target.getBoundingClientRect();
             var x = e.clientX - rect.left;
@@ -194,6 +214,18 @@ var mal;
                         }
                     }
                     break;
+                case 2:
+                    for (var i2 = 0; i2 < 16; i2++) {
+                        for (var i = 0; i < 16; i++) {
+                            var count = i + i2 * 16;
+                            if (count >= 255)
+                                continue;
+                            var chip_n = getdoubleDigestNumber(count.toString(16));
+                            ctxp2[chip_n].clearRect(0, 0, 32, 32);
+                            ctxp2[chip_n].drawImage(pimg2, 32 * i, 32 * i2, 32, 32, 0, 0, 32, 32);
+                        }
+                    }
+                    break;
             }
         }
     })(mouseEvent || (mouseEvent = {}));
@@ -202,7 +234,7 @@ var mal;
             map = new mapdata;
             this.createMalElements(obj.editor, obj["palette"]);
         }
-        init.prototype.createMalElements = function (edt, plt1) {
+        init.prototype.createMalElements = function (edt, plt) {
             var elm_edt = document.getElementById(edt.id);
             for (var i = 0; i < 3; i++) {
                 var newCanvas = document.createElement("canvas");
@@ -223,10 +255,10 @@ var mal;
             document.getElementById("c2").addEventListener('mousedown', mouseEvent.edt_mDown, false);
             var scrollHeight = elm_edt.scrollHeight;
             elm_edt.scrollTop = scrollHeight;
-            var elm_plt1 = document.getElementById(plt1["id-1"]);
+            var elm_plt1 = document.getElementById(plt["id-1"]);
             var img_plt1 = new Image();
             pimg = img_plt1;
-            img_plt1.src = plt1.parts + "?" + new Date().getTime();
+            img_plt1.src = plt.parts + "?" + new Date().getTime();
             img_plt1.onload = function () {
                 for (var i2 = 0; i2 < 5; i2++) {
                     for (var i = 0; i < 16; i++) {
@@ -249,6 +281,33 @@ var mal;
                 ctxp[0].fillStyle = "rgba(" + [255, 0, 0, 0.5] + ")";
                 ctxp[0].fillRect(0, 0, 32, 32);
             };
+            var elm_plt2 = document.getElementById(plt["id-2"]);
+            var img_plt2 = new Image();
+            pimg2 = img_plt2;
+            img_plt2.src = plt.mapchip + "?" + new Date().getTime();
+            img_plt2.onload = function () {
+                for (var i2 = 0; i2 < 16; i2++) {
+                    for (var i = 0; i < 16; i++) {
+                        var count = i + i2 * 16;
+                        if (count >= 255)
+                            continue;
+                        var chip_n = getdoubleDigestNumber(count.toString(16));
+                        var cvs = document.createElement('canvas');
+                        cvs.width = 32;
+                        cvs.height = 32;
+                        cvs.className = "pBox";
+                        cvs.id = "_p2_" + chip_n;
+                        cvs.addEventListener('mousedown', mouseEvent.plt2_mDown, false);
+                        var ctx = cvs.getContext('2d');
+                        ctx.drawImage(img_plt2, 32 * i, 32 * i2, 32, 32, 0, 0, 32, 32);
+                        elm_plt2.appendChild(cvs);
+                        cvsp2[chip_n] = cvs;
+                        ctxp2[chip_n] = cvsp2[chip_n].getContext("2d");
+                    }
+                }
+                ctxp2["00"].fillStyle = "rgba(" + [255, 0, 0, 0.5] + ")";
+                ctxp2["00"].fillRect(0, 0, 32, 32);
+            };
             console.log("done");
         };
         return init;
@@ -257,7 +316,7 @@ var mal;
     function test() {
         var a = document.getElementById("source");
         var ary = new Array();
-        var str = "";
+        var str = "new CanvasMasao.Game({\n";
         for (var i = 0; i <= 29; i++) {
             str += "\"map0-" + i + "\" : \"" + map.map0[i].join('') + "\",\n";
         }
@@ -267,6 +326,16 @@ var mal;
         for (var i = 0; i <= 29; i++) {
             str += "\"map2-" + i + "\" : \"" + map.map2[i].join('') + "\",\n";
         }
+        for (var i = 0; i <= 29; i++) {
+            str += "\"layer0-" + i + "\" : \"" + map.lay0[i].join('') + "\",\n";
+        }
+        for (var i = 0; i <= 29; i++) {
+            str += "\"layer1-" + i + "\" : \"" + map.lay1[i].join('') + "\",\n";
+        }
+        for (var i = 0; i <= 29; i++) {
+            str += "\"layer2-" + i + "\" : \"" + map.lay2[i].join('') + "\",\n";
+        }
+        str += "});";
         a.innerText = str;
     }
     mal.test = test;
