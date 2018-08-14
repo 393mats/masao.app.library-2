@@ -7,6 +7,7 @@ var mal;
     var map_image = 1;
     var chip = 0;
     var chip2 = "..";
+    var mouse_c = 0;
     var map;
     var cvs0;
     var ctx0;
@@ -16,12 +17,16 @@ var mal;
     var ctx2;
     var cvswm;
     var ctxwm;
-    var cvsp = new Array();
-    var ctxp = new Array();
-    var cvsp2 = new Array();
-    var ctxp2 = new Array();
+    var cvsp = [];
+    var ctxp = [];
+    var cvsp2 = [];
+    var ctxp2 = [];
     var pimg;
     var pimg2;
+    var cb_edt_clicked_c = 0;
+    var cb_edt_clicked = [];
+    var cb_edt_moved_c = 0;
+    var cb_edt_moved = [];
     function getdoubleDigestNumber(num) {
         return ("0" + num).slice(-2);
     }
@@ -246,8 +251,33 @@ var mal;
             var cx = x * 32;
             var cy = y * 32;
             edit(x, y, cx, cy);
+            mouse_c = 1;
+            for (var i = 0; i < cb_edt_clicked_c; i++) {
+                cb_edt_clicked[i](x, y, chip);
+            }
         }
         mouseEvent.edt_mDown = edt_mDown;
+        function edt_mMove(e) {
+            var rect = e.target.getBoundingClientRect();
+            var x = e.clientX - rect.left;
+            var y = e.clientY - rect.top;
+            x = Math.floor(x / 32);
+            y = Math.floor(y / 32);
+            var cx = x * 32;
+            var cy = y * 32;
+            if (mouse_c == 1) {
+                edit(x, y, cx, cy);
+                for (var i = 0; i < cb_edt_moved_c; i++) {
+                    cb_edt_moved[i](x, y, chip);
+                }
+            }
+        }
+        mouseEvent.edt_mMove = edt_mMove;
+        function mUp(e) {
+            mouse_c = 0;
+        }
+        mouseEvent.mUp = mUp;
+        ;
         function edit(x, y, cx, cy) {
             var chip_num;
             var mcX;
@@ -354,6 +384,8 @@ var mal;
             cvs2 = document.getElementById("c2");
             ctx2 = cvs2.getContext("2d");
             document.getElementById("c2").addEventListener('mousedown', mouseEvent.edt_mDown, false);
+            document.getElementById("c2").addEventListener('mousemove', mouseEvent.edt_mMove, false);
+            document.addEventListener('mouseup', mouseEvent.mUp, false);
             var scrollHeight = elm_edt.scrollHeight;
             elm_edt.scrollTop = scrollHeight;
             var elm_plt1 = document.getElementById(plt["id-1"]);
@@ -498,4 +530,17 @@ var mal;
         a.innerText = str;
     }
     mal.getHTML = getHTML;
+    function add(event, func) {
+        switch (event) {
+            case "edt_clicked":
+                cb_edt_clicked[cb_edt_clicked_c] = func;
+                cb_edt_clicked++;
+                break;
+            case "edt_moved":
+                cb_edt_moved[cb_edt_moved_c] = func;
+                cb_edt_moved++;
+                break;
+        }
+    }
+    mal.add = add;
 })(mal || (mal = {}));

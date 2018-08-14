@@ -14,6 +14,7 @@ module mal {
 
   let chip: number = 0;
   let chip2: string = "..";
+  let mouse_c: number = 0;
 
   let map: mapdata;                    // Declare mapdata
 
@@ -25,13 +26,19 @@ module mal {
   let ctx2: any;
   let cvswm: any;
   let ctxwm: any;
-  let cvsp: any[] = new Array();
-  let ctxp: any[] = new Array();
-  let cvsp2: any[] = new Array();
-  let ctxp2: any[] = new Array();
+  let cvsp: any[] = [];
+  let ctxp: any[] = [];
+  let cvsp2: any[] = [];
+  let ctxp2: any[] = [];
 
   let pimg: any;    // Parts image
   let pimg2: any;    // Mapchip image
+
+  // Callback functions
+  let cb_edt_clicked_c: number = 0;
+  let cb_edt_clicked: any = [];
+  let cb_edt_moved_c: number = 0;
+  let cb_edt_moved: any = [];
 
   // ---------------------------------------------------------
   // Useful functions
@@ -169,77 +176,77 @@ module mal {
     };
 
     export const cmv_color = {
-        "A": "#FF0000",
-        "9": "#FFFF00",
-        "8": "#FFFF00",
-        "B": "#32CD32",
-        "C": "#32CD32",
-        "D": "#32CD32",
-        "H": "#808000",
-        "I": "#808000",
-        "J": "#808000",
-        "E": "#FFD700",
-        "F": "#32CD32",
-        "O": "#1E90FF",
-        "G": "#FF8C00",
-        "P": "#FF8C00",
-        "Q": "#1E90FF",
-        "N": "#FAFAFA",
-        "u": "#008000",
-        "v": "#008000",
-        "w": "#008000",
-        "x": "#008000",
-        "U": "#DC143C",
-        "V": "#DC143C",
-        "1": "#fff",
-        "2": "#fff",
-        "W": "#DC143C",
-        "X": "#4B0082",
-        "R": "#696969",
-        "{": "#32CD32",
-        "}": "#FFD700",
-        "a": "#800000",
-        "b": "#808080",
-        "c": "#008080",
-        "d": "#A9A9A9",
-        "e": "#DC143C",
-        "f": "#DC143C",
-        "g": "#DAA520",
-        "h": "#A9A9A9",
-        "i": "#9E9D24",
-        "j": "#008000",
-        "z": "#800000",
-        "n": "#A52A2A",
-        "m": "#A52A2A",
-        "o": "#A52A2A",
-        "p": "#A52A2A",
-        "q": "#A52A2A",
-        "r": "#A52A2A",
-        "s": "#A52A2A",
-        "[": "#DCDCDC",
-        "]": "#DCDCDC",
-        "<": "#808080",
-        ">": "#808080",
-        "5": "#DCDCDC",
-        "6": "#DCDCDC",
-        "4": "#0000FF",
-        "7": "#800000",
-        "Y": "#006400",
-        "+": "#FF00FF",
-        "-": "#FF00FF",
-        "*": "#FF00FF",
-        "/": "#FF00FF",
-        "K": "#FFD700",
-        "L": "#FFD700",
-        "M": "#FFD700",
-        "t": "#A52A2A",
-        "k": "#A52A2A",
-        "l": "#A52A2A",
-        "y": "#A52A2A",
-        "S": "#CD5C5C",
-        "T": "#00008B",
-        "Z": "#00FF00",
-        "3": "#81C784"
+      "A": "#FF0000",
+      "9": "#FFFF00",
+      "8": "#FFFF00",
+      "B": "#32CD32",
+      "C": "#32CD32",
+      "D": "#32CD32",
+      "H": "#808000",
+      "I": "#808000",
+      "J": "#808000",
+      "E": "#FFD700",
+      "F": "#32CD32",
+      "O": "#1E90FF",
+      "G": "#FF8C00",
+      "P": "#FF8C00",
+      "Q": "#1E90FF",
+      "N": "#FAFAFA",
+      "u": "#008000",
+      "v": "#008000",
+      "w": "#008000",
+      "x": "#008000",
+      "U": "#DC143C",
+      "V": "#DC143C",
+      "1": "#fff",
+      "2": "#fff",
+      "W": "#DC143C",
+      "X": "#4B0082",
+      "R": "#696969",
+      "{": "#32CD32",
+      "}": "#FFD700",
+      "a": "#800000",
+      "b": "#808080",
+      "c": "#008080",
+      "d": "#A9A9A9",
+      "e": "#DC143C",
+      "f": "#DC143C",
+      "g": "#DAA520",
+      "h": "#A9A9A9",
+      "i": "#9E9D24",
+      "j": "#008000",
+      "z": "#800000",
+      "n": "#A52A2A",
+      "m": "#A52A2A",
+      "o": "#A52A2A",
+      "p": "#A52A2A",
+      "q": "#A52A2A",
+      "r": "#A52A2A",
+      "s": "#A52A2A",
+      "[": "#DCDCDC",
+      "]": "#DCDCDC",
+      "<": "#808080",
+      ">": "#808080",
+      "5": "#DCDCDC",
+      "6": "#DCDCDC",
+      "4": "#0000FF",
+      "7": "#800000",
+      "Y": "#006400",
+      "+": "#FF00FF",
+      "-": "#FF00FF",
+      "*": "#FF00FF",
+      "/": "#FF00FF",
+      "K": "#FFD700",
+      "L": "#FFD700",
+      "M": "#FFD700",
+      "t": "#A52A2A",
+      "k": "#A52A2A",
+      "l": "#A52A2A",
+      "y": "#A52A2A",
+      "S": "#CD5C5C",
+      "T": "#00008B",
+      "Z": "#00FF00",
+      "3": "#81C784"
     };
 
     // Get chip code from chip number for Palette-1
@@ -316,11 +323,42 @@ module mal {
       const cy: number = y * 32;  // Y
 
       edit(x, y, cx, cy);       // Edit map
+      mouse_c = 1;
+
+      for (let i = 0; i < cb_edt_clicked_c; i++) {
+        cb_edt_clicked[i](x, y, chip);
+      }
 
     }
+    // Editor mouse move event
+    export function edt_mMove(e: any): void {
+
+      // Get msp cordinates
+      const rect = e.target.getBoundingClientRect();
+      let x: number = e.clientX - rect.left;
+      let y: number = e.clientY - rect.top;
+      x = Math.floor(x / 32);
+      y = Math.floor(y / 32);
+      const cx: number = x * 32;  // X
+      const cy: number = y * 32;  // Y
+
+      if (mouse_c == 1) {
+        edit(x, y, cx, cy);       // Edit map
+
+        for (let i = 0; i < cb_edt_moved_c; i++) {
+          cb_edt_moved[i](x, y, chip);
+        }
+
+      }
+
+    }
+    // Editor mouse up event
+    export function mUp(e: any): void {
+      mouse_c = 0;
+    };
 
     // Edit map data
-    function edit(x: number, y: number, cx: number, cy: number){
+    function edit(x: number, y: number, cx: number, cy: number) {
 
       let chip_num: number;
       let mcX: number;
@@ -343,11 +381,11 @@ module mal {
           ctx1.drawImage(pimg, 32 * mcX, 32 * mcY, 32, 32, cx, cy, 32, 32);
 
           let wm_c: string = palette.getChipname(chip);
-          if(wm_c == "."){
-            ctxwm.clearRect(x*2, y*2, 2, 2);
-          }else {
+          if (wm_c == ".") {
+            ctxwm.clearRect(x * 2, y * 2, 2, 2);
+          } else {
             ctxwm.fillStyle = palette.cmv_color[wm_c];
-            ctxwm.fillRect(x*2, y*2, 2, 2);
+            ctxwm.fillRect(x * 2, y * 2, 2, 2);
           }
 
 
@@ -363,7 +401,7 @@ module mal {
             map.map2[y][x - 120] = palette.getChipname(chip);
           }
 
-        break;
+          break;
 
         case 0:
           // Clear canvas
@@ -372,10 +410,10 @@ module mal {
           let chip2_c: string = chip2;
 
           // Make ".." to number
-          if(chip2 == "..") chip2_c = "00";
+          if (chip2 == "..") chip2_c = "00";
 
           // Delete the first "0"
-          if(chip2_c.slice(0,1) == "0") chip2_c = chip2_c.slice(1);
+          if (chip2_c.slice(0, 1) == "0") chip2_c = chip2_c.slice(1);
 
           // Get decimal number
           chip_num = parseInt(chip2_c, 16)
@@ -400,7 +438,7 @@ module mal {
             map.lay2[y][x - 120] = chip2;
           }
 
-        break;
+          break;
       }
     }
 
@@ -490,7 +528,9 @@ module mal {
 
       // Mouse event
       document.getElementById("c2").addEventListener('mousedown', mouseEvent.edt_mDown, false);
-
+      document.getElementById("c2").addEventListener('mousemove', mouseEvent.edt_mMove, false);
+      //document.getElementById("c2").addEventListener('touchmove', touchMove, false);
+      document.addEventListener('mouseup', mouseEvent.mUp, false);
 
       // Get Editor's height and scroll down automatically
       const scrollHeight: number = elm_edt.scrollHeight;
@@ -637,7 +677,7 @@ module mal {
       const cvs_wm: HTMLCanvasElement = document.createElement('canvas');
       cvs_wm.width = 360;                 // Chip width
       cvs_wm.height = 60;                 // Chip height
-      cvs_wm.id = "_cmv" ;             // Set id
+      cvs_wm.id = "_cmv";                // Set id
 
       // Put canvas on the palette element
       elm_cmv.appendChild(cvs_wm);
@@ -656,41 +696,43 @@ module mal {
     const elm_c1: HTMLElement = document.getElementById("c1"); // Normal layer
     const elm_c0: HTMLElement = document.getElementById("c0"); // Background layer
 
-    switch(int){
+    switch (int) {
       case 1:   // Normal layer
         elm_c1.style.opacity = "1";
         elm_c0.style.opacity = "0.5";
 
         layer_mode = 1;
-      break;
+        break;
+
       case 0:   // Background layer
         elm_c1.style.opacity = "0.5";
         elm_c0.style.opacity = "1";
 
         layer_mode = 0;
-      break;
+        break;
     }
   }
 
-    export function getLayerMode(): number {
-      return layer_mode;
-    }
+  export function getLayerMode(): number {
+    return layer_mode;
+  }
 
   export function switchGrid(int: number): void {
 
     const elm_c2: HTMLElement = document.getElementById("c2"); // Grid canvas
 
-    switch(int){
+    switch (int) {
       case 1:   // show
         elm_c2.style.opacity = "1";
 
         grid_mode = 1;
-      break;
+        break;
+
       case 0:   // hidden
         elm_c2.style.opacity = "0";
 
         grid_mode = 0;
-      break;
+        break;
     }
   }
 
@@ -727,5 +769,23 @@ module mal {
 
     a.innerText = str;
 
+  }
+  // Add event listener
+  export function add(event: string, func: any): void {
+
+    switch (event) {
+      //  エディタをクリックした時
+      case "edt_clicked":
+        cb_edt_clicked[cb_edt_clicked_c] = func;
+        cb_edt_clicked++;
+
+        break;
+        
+      case "edt_moved":
+        cb_edt_moved[cb_edt_moved_c] = func;
+        cb_edt_moved++;
+
+        break;
+    }
   }
 }
