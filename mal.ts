@@ -6,27 +6,29 @@
 //  TypeScript-ES5
 // ---------------------------------------------------------
 module mal {
-  export var version: string = "1.0";  // MAL version
-  var lang: string = "ja";
+  export const version: string = "1.0";  // MAL version
+  let lang: string = "ja";
+  let layer_mode: number = 1;               // Layer mode. 1: Normal, 0: Background
+  let grid_mode: number = 1;               // grid mode. 1: show, 0: hidden
 
-  var chip: number = 0;
-  var chip2: string = "..";
+  let chip: number = 0;
+  let chip2: string = "..";
 
-  var map: mapdata;                    // Declare mapdata
+  let map: mapdata;                    // Declare mapdata
 
-  var cvs0: any;                       // Canvas
-  var ctx0: any;
-  var cvs1: any;
-  var ctx1: any;
-  var cvs2: any;
-  var ctx2: any;
-  var cvsp: any[] = new Array();
-  var ctxp: any[] = new Array();
-  var cvsp2: any[] = new Array();;
-  var ctxp2: any[] = new Array();;
+  let cvs0: any;                       // Canvas
+  let ctx0: any;
+  let cvs1: any;
+  let ctx1: any;
+  let cvs2: any;
+  let ctx2: any;
+  let cvsp: any[] = new Array();
+  let ctxp: any[] = new Array();
+  let cvsp2: any[] = new Array();
+  let ctxp2: any[] = new Array();
 
-  var pimg: any;    // Parts image
-  var pimg2: any;    // Mapchip image
+  let pimg: any;    // Parts image
+  let pimg2: any;    // Mapchip image
 
   // ---------------------------------------------------------
   // Useful functions
@@ -48,19 +50,22 @@ module mal {
     public lay2: any[] = new Array();
 
     constructor() {
-      var r: RegExp = new RegExp(".{1,2}", "g"); // match
-      var map_data: string = "............................................................";
-      var lay_data: string = "........................................................................................................................";
+      const r: RegExp = new RegExp(".{1,2}", "g"); // match
 
+      // Normal Layer
+      const map_data: string = "............................................................";
+
+      // Background layer
+      const lay_data: string = map_data + map_data;
       // Normal layer
-      for (var i = 0; i <= 29; i++) {
+      for (let i = 0; i <= 29; i++) {
         this.map0[i] = map_data.split("");
         this.map1[i] = map_data.split("");
         this.map2[i] = map_data.split("");
       }
 
       // Background layer
-      for (var i = 0; i <= 29; i++) {
+      for (let i = 0; i <= 29; i++) {
         this.lay0[i] = lay_data.match(r);
         this.lay1[i] = lay_data.match(r);
         this.lay2[i] = lay_data.match(r);
@@ -74,13 +79,13 @@ module mal {
   module palette {
 
     // Chipdata for normal layer pallete
-    var plt_chip_data: string = ".A98BCDHIJEFOGPQWXR{}abcdefghijz[]<>5647Y+-*/KLMNuvwxUV12nmopqrstklySTZ3";
-    export var plt_chips: any[] = plt_chip_data.split("");
+    const plt_chip_data: string = ".A98BCDHIJEFOGPQWXR{}abcdefghijz[]<>5647Y+-*/KLMNuvwxUV12nmopqrstklySTZ3";
+    export const plt_chips: any[] = plt_chip_data.split("");
 
-    var plt2_chip_data: string = "abcdef";
-    export var plt2_chips: any[] = plt2_chip_data.split("");
+    const plt2_chip_data: string = "abcdef";
+    export const plt2_chips: any[] = plt2_chip_data.split("");
 
-    export var plt_description = {
+    export const plt_description = {
       "ja": {
         ".": "空白",
         "A": "正男",
@@ -182,13 +187,13 @@ module mal {
     export function plt1_mDown(e: any): void {
 
       // Get parts id from element id "_p1_*"
-      var id: string = e.target.id.slice(4);
+      const id: string = e.target.id.slice(4);
 
-      //String to integer
+      // String to integer
       chip = parseInt(id);
 
-      //Get chip id
-      var chip_id = palette.getChipname(chip);
+      // Get chip id
+      const chip_id = palette.getChipname(chip);
 
       console.log("down", palette.getChipname(chip), palette.getChipDesc(chip_id));
 
@@ -204,9 +209,9 @@ module mal {
     export function plt2_mDown(e: any): void {
 
       // Get parts id from element id "_p1_*"
-      var id: string = e.target.id.slice(4);
+      const id: string = e.target.id.slice(4);
 
-      //Set chip
+      // Set chip
       chip2 = id;
       if (id == "00") chip2 = "..";
 
@@ -225,49 +230,90 @@ module mal {
     export function edt_mDown(e: any): void {
 
       // Get msp cordinates
-      var rect = e.target.getBoundingClientRect();
-      var x: number = e.clientX - rect.left;
-      var y: number = e.clientY - rect.top;
+      const rect = e.target.getBoundingClientRect();
+      let x: number = e.clientX - rect.left;
+      let y: number = e.clientY - rect.top;
       x = Math.floor(x / 32);
       y = Math.floor(y / 32);
-      var cx: number = x * 32;  //  X
-      var cy: number = y * 32;  //  Y
+      const cx: number = x * 32;  // X
+      const cy: number = y * 32;  // Y
 
-      // Clear canvas
-      ctx1.clearRect(cx, cy, 32, 32);
+      edit(x, y, cx, cy);       // Edit map
 
-      // Get chip
-      var chip_num = chip;
-      var ch_y = 0;
-      if (chip_num > 15 && chip_num < 16 * 2) {
-        chip_num -= 16;
-        ch_y = 1;
-      }
-      else if (chip_num > 15 * 2 && chip_num < 16 * 3) {
-        chip_num -= 16 * 2;
-        ch_y = 2;
-      }
-      else if (chip_num > 15 * 3 && chip_num < 16 * 4) {
-        chip_num -= 16 * 3;
-        ch_y = 3;
-      }
-      else if (chip_num > 15 * 4 && chip_num < 16 * 5) {
-        chip_num -= 16 * 4;
-        ch_y = 4;
-      }
+    }
 
-      // Draw chip on editor
-      ctx1.drawImage(pimg, 32 * chip_num, 32 * ch_y, 32, 32, cx, cy, 32, 32);
-      console.log(x, y, chip_num);
+    // Edit map data
+    function edit(x: number, y: number, cx: number, cy: number){
 
-      if (x < 60) {
-        map.map0[y][x] = palette.getChipname(chip);
-      }
-      else if (x > 59 && x < 120) {
-        map.map1[y][x - 60] = palette.getChipname(chip);
-      }
-      else if (x > 119 && x < 180) {
-        map.map2[y][x - 120] = palette.getChipname(chip);
+      let chip_num: number;
+      let mcX: number;
+      let mcY: number;
+
+      //Editor input mode
+      switch (layer_mode) {
+        case 1:
+          // Clear canvas
+          ctx1.clearRect(cx, cy, 32, 32);
+
+          // Get chip
+          chip_num = chip;
+
+          // Draw chip on editor
+          mcX = chip_num - Math.floor(chip_num / 16) * 16;
+          mcY = Math.floor(chip_num / 16);
+
+          // Draw chip on editor
+          ctx1.drawImage(pimg, 32 * mcX, 32 * mcY, 32, 32, cx, cy, 32, 32);
+          console.log(x, y, chip_num);
+
+          if (x < 60) {
+            map.map0[y][x] = palette.getChipname(chip);
+          }
+          else if (x > 59 && x < 120) {
+            map.map1[y][x - 60] = palette.getChipname(chip);
+          }
+          else if (x > 119 && x < 180) {
+            map.map2[y][x - 120] = palette.getChipname(chip);
+          }
+
+        break;
+
+        case 0:
+          // Clear canvas
+          ctx0.clearRect(cx, cy, 32, 32);
+
+          let chip2_c: string = chip2;
+
+          // Make ".." to number
+          if(chip2 == "..") chip2_c = "00";
+
+          // Delete the first "0"
+          if(chip2_c.slice(0,1) == "0") chip2_c = chip2_c.slice(1);
+
+          // Get decimal number
+          chip_num = parseInt(chip2_c, 16)
+
+          // Draw chip on editor
+          mcX = chip_num - Math.floor(chip_num / 16) * 16;
+          mcY = Math.floor(chip_num / 16);
+
+          // Draw chip
+          ctx0.drawImage(pimg2, 32 * mcX, 32 * mcY, 32, 32, cx, cy, 32, 32);
+
+          console.log(chip2, chip_num, mcX, mcY);
+
+          // Reflect layer map data
+          if (x < 60) {
+            map.lay0[y][x] = chip2;
+          }
+          else if (x > 59 && x < 120) {
+            map.lay1[y][x - 60] = chip2;
+          }
+          else if (x > 119 && x < 180) {
+            map.lay2[y][x - 120] = chip2;
+          }
+
+        break;
       }
     }
 
@@ -277,9 +323,9 @@ module mal {
         // Palette-1
         case 1:
           // reset all palette objects as a canvas element
-          for (var i2 = 0; i2 < 5; i2++) {  // Vertical
-            for (var i = 0; i < 16; i++) {  // Horizontal
-              var count: number = i + i2 * 16;
+          for (let i2 = 0; i2 < 5; i2++) {  // Vertical
+            for (let i = 0; i < 16; i++) {  // Horizontal
+              const count: number = i + i2 * 16;
               if (count >= 72) continue;
 
               // Draw chip
@@ -291,13 +337,13 @@ module mal {
         // Palette-2
         case 2:
           // reset all palette objects as a canvas element
-          for (var i2 = 0; i2 < 16; i2++) {  // Vertical
-            for (var i = 0; i < 16; i++) {   // Horizontal
-              var count: number = i + i2 * 16;
+          for (let i2 = 0; i2 < 16; i2++) {  // Vertical
+            for (let i = 0; i < 16; i++) {   // Horizontal
+              const count: number = i + i2 * 16;
               if (count >= 255) continue;
 
               // Hexadecimal
-              var chip_n: string = getdoubleDigestNumber(count.toString(16));
+              const chip_n: string = getdoubleDigestNumber(count.toString(16));
 
               // Draw chip
               ctxp2[chip_n].clearRect(0, 0, 32, 32);
@@ -316,7 +362,7 @@ module mal {
 
     // Constructor
     protected constructor(obj: any) {
-      map = new mapdata;
+      map = new mapdata();
       this.createMalElements(obj.editor, obj["palette"]); // Create mal elements
     }
 
@@ -328,12 +374,12 @@ module mal {
       // ---------------------------------------------------------
 
       // Get place from element id to put editor
-      var elm_edt: HTMLElement = document.getElementById(edt.id);
+      const elm_edt: HTMLElement = document.getElementById(edt.id);
 
       // Create 3 canvas elements, background, main, and front layer.
       // c0: bg layer, c1: noraml layer, c2: grid and touch
-      for (var i = 0; i < 3; i++) {
-        var newCanvas: HTMLCanvasElement = document.createElement("canvas");
+      for (let i = 0; i < 3; i++) {
+        const newCanvas: HTMLCanvasElement = document.createElement("canvas");
         newCanvas.id = "c" + i;                       // Set id
         newCanvas.width = 5760;                       // Default width
         newCanvas.height = 960;                       // Default height
@@ -353,14 +399,14 @@ module mal {
 
       // grid camvas
       cvs2 = <HTMLCanvasElement>document.getElementById("c2");
-      ctx2 = cvs1.getContext("2d");
+      ctx2 = cvs2.getContext("2d");
 
       // Mouse event
       document.getElementById("c2").addEventListener('mousedown', mouseEvent.edt_mDown, false);
 
 
       // Get Editor's height and scroll down automatically
-      var scrollHeight: number = elm_edt.scrollHeight;
+      const scrollHeight: number = elm_edt.scrollHeight;
       elm_edt.scrollTop = scrollHeight;
 
       // ---------------------------------------------------------
@@ -368,10 +414,10 @@ module mal {
       // ---------------------------------------------------------
 
       // Get place from element id to put palette-1
-      var elm_plt1: HTMLElement = document.getElementById(plt["id-1"]);
+      const elm_plt1: HTMLElement = document.getElementById(plt["id-1"]);
 
       // Declare image object to make a Pallete
-      var img_plt1 = new Image();
+      let img_plt1 = new Image();
       pimg = img_plt1;
 
       // Set parts file
@@ -381,14 +427,14 @@ module mal {
       img_plt1.onload = function() {
 
         // Create all palette objects as a canvas element
-        for (var i2 = 0; i2 < 5; i2++) {  // Vertical
+        for (let i2 = 0; i2 < 5; i2++) {  // Vertical
 
-          for (var i = 0; i < 16; i++) {  // Horizontal
-            var count = i + i2 * 16;      // Count repeat time. It becomes chip id
+          for (let i = 0; i < 16; i++) {  // Horizontal
+            let count = i + i2 * 16;      // Count repeat time. It becomes chip id
             if (count >= 72) continue;
 
             // Create canvas element
-            var cvs: HTMLCanvasElement = document.createElement('canvas');
+            const cvs: HTMLCanvasElement = document.createElement('canvas');
             cvs.width = 32;                  // Chip width
             cvs.height = 32;                 // Chip height
             cvs.className = "pBox";          // Set classname
@@ -398,7 +444,7 @@ module mal {
             cvs.addEventListener('mousedown', mouseEvent.plt1_mDown, false);
 
             // Get context
-            var ctx: any = cvs.getContext('2d');
+            const ctx: any = cvs.getContext('2d');
 
             // Draw chip
             ctx.drawImage(img_plt1, 32 * i, 32 * i2, 32, 32, 0, 0, 32, 32);
@@ -423,10 +469,10 @@ module mal {
       // ---------------------------------------------------------
 
       // Get place from element id to put palette-2
-      var elm_plt2: HTMLElement = document.getElementById(plt["id-2"]);
+      const elm_plt2: HTMLElement = document.getElementById(plt["id-2"]);
 
       // Declare image object to make a Pallete
-      var img_plt2 = new Image();
+      let img_plt2 = new Image();
       pimg2 = img_plt2;
 
       // Set parts file
@@ -436,17 +482,17 @@ module mal {
       img_plt2.onload = function() {
 
         // Create all palette objects as a canvas element
-        for (var i2 = 0; i2 < 16; i2++) {  // Vertical
+        for (let i2 = 0; i2 < 16; i2++) {  // Vertical
 
-          for (var i = 0; i < 16; i++) {  // Horizontal
-            var count = i + i2 * 16;      // Count repeat time.
+          for (let i = 0; i < 16; i++) {  // Horizontal
+            let count = i + i2 * 16;      // Count repeat time.
             if (count >= 255) continue;
 
-            // Hexadecimal
-            var chip_n: string = getdoubleDigestNumber(count.toString(16));
+            // Get hexadecimal number
+            const chip_n: string = getdoubleDigestNumber(count.toString(16));
 
             // Create canvas element
-            var cvs: HTMLCanvasElement = document.createElement('canvas');
+            const cvs: HTMLCanvasElement = document.createElement('canvas');
             cvs.width = 32;                  // Chip width
             cvs.height = 32;                 // Chip height
             cvs.className = "pBox";          // Set classname
@@ -456,7 +502,7 @@ module mal {
             cvs.addEventListener('mousedown', mouseEvent.plt2_mDown, false);
 
             // Get context
-            var ctx: any = cvs.getContext('2d');
+            const ctx: any = cvs.getContext('2d');
 
             // Draw chip
             ctx.drawImage(img_plt2, 32 * i, 32 * i2, 32, 32, 0, 0, 32, 32);
@@ -477,34 +523,97 @@ module mal {
 
       }
 
-      console.log("done");
+      // ---------------------------------------------------------
+      // Grid
+      // ---------------------------------------------------------
+      ctx2.beginPath();
+      ctx2.fillStyle = "rgb(" + [255, 255, 255] + ")";
+      for (let i = 1; i < 180 * 32; i++) {
+        ctx2.moveTo(i * 32, 0);
+        ctx2.lineTo(i * 32, 960);
+      }
+      for (let i = 1; i < 30 * 32; i++) {
+        ctx2.moveTo(0, i * 32);
+        ctx2.lineTo(5760, i * 32);
+      }
+      ctx2.stroke();
+
+      switchGrid(parseFloat(edt.grid));
+
+      console.log("Loaded");
     }
 
   }
 
+  export function switchLayer(int: number): void {
+
+    const elm_c1: HTMLElement = document.getElementById("c1"); // Normal layer
+    const elm_c0: HTMLElement = document.getElementById("c0"); // Background layer
+
+    switch(int){
+      case 1:   // Normal layer
+        elm_c1.style.opacity = "1";
+        elm_c0.style.opacity = "0.5";
+
+        layer_mode = 1;
+      break;
+      case 0:   // Background layer
+        elm_c1.style.opacity = "0.5";
+        elm_c0.style.opacity = "1";
+
+        layer_mode = 0;
+      break;
+    }
+  }
+
+    export function getLayerMode(): number {
+      return layer_mode;
+    }
+
+  export function switchGrid(int: number): void {
+
+    const elm_c2: HTMLElement = document.getElementById("c2"); // Grid canvas
+
+    switch(int){
+      case 1:   // show
+        elm_c2.style.opacity = "1";
+
+        grid_mode = 1;
+      break;
+      case 0:   // hidden
+        elm_c2.style.opacity = "0";
+
+        grid_mode = 0;
+      break;
+    }
+  }
+
+  export function getGridMode(): number {
+    return grid_mode;
+  }
+
   // Just for method test
-  export function test(): void {
-    var a: HTMLElement = document.getElementById("source");
-    var ary: any[] = new Array();
-    var str: string = "new CanvasMasao.Game({\n";
+  export function getHTML(): void {
+    const a: HTMLElement = document.getElementById("source");
+    let str: string = "new CanvasMasao.Game({\n";
 
     // Makes mapdata source
-    for (var i = 0; i <= 29; i++) {
+    for (let i = 0; i <= 29; i++) {
       str += "\"map0-" + i + "\" : \"" + map.map0[i].join('') + "\",\n";
     }
-    for (var i = 0; i <= 29; i++) {
+    for (let i = 0; i <= 29; i++) {
       str += "\"map1-" + i + "\" : \"" + map.map1[i].join('') + "\",\n";
     }
-    for (var i = 0; i <= 29; i++) {
+    for (let i = 0; i <= 29; i++) {
       str += "\"map2-" + i + "\" : \"" + map.map2[i].join('') + "\",\n";
     }
-    for (var i = 0; i <= 29; i++) {
+    for (let i = 0; i <= 29; i++) {
       str += "\"layer0-" + i + "\" : \"" + map.lay0[i].join('') + "\",\n";
     }
-    for (var i = 0; i <= 29; i++) {
+    for (let i = 0; i <= 29; i++) {
       str += "\"layer1-" + i + "\" : \"" + map.lay1[i].join('') + "\",\n";
     }
-    for (var i = 0; i <= 29; i++) {
+    for (let i = 0; i <= 29; i++) {
       str += "\"layer2-" + i + "\" : \"" + map.lay2[i].join('') + "\",\n";
     }
 

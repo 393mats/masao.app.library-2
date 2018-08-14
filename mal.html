@@ -22,9 +22,13 @@
 
   <br>
 
-  <button onclick="test()">TEST</button>
+  <button onclick="test()">サイズ変更（512px）</button>
 
-  <button onclick="test2()">TEST2</button>
+  <button onclick="test2()">コード出力</button>
+
+  <button onclick="test3()">レイヤー切り替え</button>
+
+  <button onclick="test4()">グリッド表示切り替え</button>
 
   <br>
 
@@ -35,21 +39,35 @@
 new mal.init({
   "editor": {
     "id": "edt",
+    "grid": "1"
   },
   "palette": {
     "id-1": "plt1",
     "id-2": "plt2",
-    "parts": "./parts2.png",
+    "parts": "./parts.png",
     "mapchip": "./mapchip.gif"
   }
 });
 
 function test(){
   document.getElementById("plt1").style.width = "512px";
+  document.getElementById("plt2").style.width = "512px";
 }
 
 function test2(){
-  mal.test();
+  mal.getHTML();
+}
+
+function test3(){
+  var lm = mal.getLayerMode();
+  if(lm == 1) mal.switchLayer(0);
+  else mal.switchLayer(1);
+}
+
+function test4(){
+  var gr = mal.getGridMode();
+  if(gr == 1) mal.switchGrid(0);
+  else mal.switchGrid(1);
 }
 </script>
 

@@ -2,6 +2,8 @@ var mal;
 (function (mal) {
     mal.version = "1.0";
     var lang = "ja";
+    var layer_mode = 1;
+    var grid_mode = 1;
     var chip = 0;
     var chip2 = "..";
     var map;
@@ -14,9 +16,7 @@ var mal;
     var cvsp = new Array();
     var ctxp = new Array();
     var cvsp2 = new Array();
-    ;
     var ctxp2 = new Array();
-    ;
     var pimg;
     var pimg2;
     function getdoubleDigestNumber(num) {
@@ -32,7 +32,7 @@ var mal;
             this.lay2 = new Array();
             var r = new RegExp(".{1,2}", "g");
             var map_data = "............................................................";
-            var lay_data = "........................................................................................................................";
+            var lay_data = map_data + map_data;
             for (var i = 0; i <= 29; i++) {
                 this.map0[i] = map_data.split("");
                 this.map1[i] = map_data.split("");
@@ -169,38 +169,55 @@ var mal;
             y = Math.floor(y / 32);
             var cx = x * 32;
             var cy = y * 32;
-            ctx1.clearRect(cx, cy, 32, 32);
-            var chip_num = chip;
-            var ch_y = 0;
-            if (chip_num > 15 && chip_num < 16 * 2) {
-                chip_num -= 16;
-                ch_y = 1;
-            }
-            else if (chip_num > 15 * 2 && chip_num < 16 * 3) {
-                chip_num -= 16 * 2;
-                ch_y = 2;
-            }
-            else if (chip_num > 15 * 3 && chip_num < 16 * 4) {
-                chip_num -= 16 * 3;
-                ch_y = 3;
-            }
-            else if (chip_num > 15 * 4 && chip_num < 16 * 5) {
-                chip_num -= 16 * 4;
-                ch_y = 4;
-            }
-            ctx1.drawImage(pimg, 32 * chip_num, 32 * ch_y, 32, 32, cx, cy, 32, 32);
-            console.log(x, y, chip_num);
-            if (x < 60) {
-                map.map0[y][x] = palette.getChipname(chip);
-            }
-            else if (x > 59 && x < 120) {
-                map.map1[y][x - 60] = palette.getChipname(chip);
-            }
-            else if (x > 119 && x < 180) {
-                map.map2[y][x - 120] = palette.getChipname(chip);
-            }
+            edit(x, y, cx, cy);
         }
         mouseEvent.edt_mDown = edt_mDown;
+        function edit(x, y, cx, cy) {
+            var chip_num;
+            var mcX;
+            var mcY;
+            switch (layer_mode) {
+                case 1:
+                    ctx1.clearRect(cx, cy, 32, 32);
+                    chip_num = chip;
+                    mcX = chip_num - Math.floor(chip_num / 16) * 16;
+                    mcY = Math.floor(chip_num / 16);
+                    ctx1.drawImage(pimg, 32 * mcX, 32 * mcY, 32, 32, cx, cy, 32, 32);
+                    console.log(x, y, chip_num);
+                    if (x < 60) {
+                        map.map0[y][x] = palette.getChipname(chip);
+                    }
+                    else if (x > 59 && x < 120) {
+                        map.map1[y][x - 60] = palette.getChipname(chip);
+                    }
+                    else if (x > 119 && x < 180) {
+                        map.map2[y][x - 120] = palette.getChipname(chip);
+                    }
+                    break;
+                case 0:
+                    ctx0.clearRect(cx, cy, 32, 32);
+                    var chip2_c = chip2;
+                    if (chip2 == "..")
+                        chip2_c = "00";
+                    if (chip2_c.slice(0, 1) == "0")
+                        chip2_c = chip2_c.slice(1);
+                    chip_num = parseInt(chip2_c, 16);
+                    mcX = chip_num - Math.floor(chip_num / 16) * 16;
+                    mcY = Math.floor(chip_num / 16);
+                    ctx0.drawImage(pimg2, 32 * mcX, 32 * mcY, 32, 32, cx, cy, 32, 32);
+                    console.log(chip2, chip_num, mcX, mcY);
+                    if (x < 60) {
+                        map.lay0[y][x] = chip2;
+                    }
+                    else if (x > 59 && x < 120) {
+                        map.lay1[y][x - 60] = chip2;
+                    }
+                    else if (x > 119 && x < 180) {
+                        map.lay2[y][x - 120] = chip2;
+                    }
+                    break;
+            }
+        }
         function Redraw(mode) {
             switch (mode) {
                 case 1:
@@ -231,7 +248,7 @@ var mal;
     })(mouseEvent || (mouseEvent = {}));
     var init = (function () {
         function init(obj) {
-            map = new mapdata;
+            map = new mapdata();
             this.createMalElements(obj.editor, obj["palette"]);
         }
         init.prototype.createMalElements = function (edt, plt) {
@@ -251,7 +268,7 @@ var mal;
             cvs1 = document.getElementById("c1");
             ctx1 = cvs1.getContext("2d");
             cvs2 = document.getElementById("c2");
-            ctx2 = cvs1.getContext("2d");
+            ctx2 = cvs2.getContext("2d");
             document.getElementById("c2").addEventListener('mousedown', mouseEvent.edt_mDown, false);
             var scrollHeight = elm_edt.scrollHeight;
             elm_edt.scrollTop = scrollHeight;
@@ -308,14 +325,64 @@ var mal;
                 ctxp2["00"].fillStyle = "rgba(" + [255, 0, 0, 0.5] + ")";
                 ctxp2["00"].fillRect(0, 0, 32, 32);
             };
-            console.log("done");
+            ctx2.beginPath();
+            ctx2.fillStyle = "rgb(" + [255, 255, 255] + ")";
+            for (var i = 1; i < 180 * 32; i++) {
+                ctx2.moveTo(i * 32, 0);
+                ctx2.lineTo(i * 32, 960);
+            }
+            for (var i = 1; i < 30 * 32; i++) {
+                ctx2.moveTo(0, i * 32);
+                ctx2.lineTo(5760, i * 32);
+            }
+            ctx2.stroke();
+            switchGrid(parseFloat(edt.grid));
+            console.log("Loaded");
         };
         return init;
     }());
     mal.init = init;
-    function test() {
+    function switchLayer(int) {
+        var elm_c1 = document.getElementById("c1");
+        var elm_c0 = document.getElementById("c0");
+        switch (int) {
+            case 1:
+                elm_c1.style.opacity = "1";
+                elm_c0.style.opacity = "0.5";
+                layer_mode = 1;
+                break;
+            case 0:
+                elm_c1.style.opacity = "0.5";
+                elm_c0.style.opacity = "1";
+                layer_mode = 0;
+                break;
+        }
+    }
+    mal.switchLayer = switchLayer;
+    function getLayerMode() {
+        return layer_mode;
+    }
+    mal.getLayerMode = getLayerMode;
+    function switchGrid(int) {
+        var elm_c2 = document.getElementById("c2");
+        switch (int) {
+            case 1:
+                elm_c2.style.opacity = "1";
+                grid_mode = 1;
+                break;
+            case 0:
+                elm_c2.style.opacity = "0";
+                grid_mode = 0;
+                break;
+        }
+    }
+    mal.switchGrid = switchGrid;
+    function getGridMode() {
+        return grid_mode;
+    }
+    mal.getGridMode = getGridMode;
+    function getHTML() {
         var a = document.getElementById("source");
-        var ary = new Array();
         var str = "new CanvasMasao.Game({\n";
         for (var i = 0; i <= 29; i++) {
             str += "\"map0-" + i + "\" : \"" + map.map0[i].join('') + "\",\n";
@@ -338,5 +405,5 @@ var mal;
         str += "});";
         a.innerText = str;
     }
-    mal.test = test;
+    mal.getHTML = getHTML;
 })(mal || (mal = {}));
