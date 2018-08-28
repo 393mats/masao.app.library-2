@@ -7,7 +7,9 @@ var mal;
     var map_image = 1;
     var chip = 0;
     var chip2 = "..";
+    var edt_e;
     var mouse_c = 0;
+    var mouse_c2 = 0;
     var map;
     var cvs0;
     var ctx0;
@@ -27,6 +29,11 @@ var mal;
     var cb_edt_clicked = [];
     var cb_edt_moved_c = 0;
     var cb_edt_moved = [];
+    var ua = navigator.userAgent.toLowerCase();
+    var isiPhone = (ua.indexOf('iphone') > -1);
+    var isiPad = (ua.indexOf('ipad') > -1);
+    var isAndroid = (ua.indexOf('android') > -1) && (ua.indexOf('mobile') > -1);
+    var isAndroidTablet = (ua.indexOf('android') > -1) && (ua.indexOf('mobile') == -1);
     function getdoubleDigestNumber(num) {
         return ("0" + num).slice(-2);
     }
@@ -221,6 +228,8 @@ var mal;
     })(palette || (palette = {}));
     var mouseEvent;
     (function (mouseEvent) {
+        var touchX = 0;
+        var touchY = 0;
         function plt1_mDown(e) {
             var id = e.target.id.slice(4);
             chip = parseInt(id);
@@ -273,11 +282,95 @@ var mal;
             }
         }
         mouseEvent.edt_mMove = edt_mMove;
+        function edt_tDown(e) {
+            var rect = e.target.getBoundingClientRect();
+            var x = e.changedTouches[0].pageX - (rect.left + window.pageXOffset);
+            var y = e.changedTouches[0].pageY - (rect.top + window.pageYOffset);
+            touchX = x;
+            touchY = y;
+            x = Math.floor(x / 32);
+            y = Math.floor(y / 32);
+            var cx = x * 32;
+            var cy = y * 32;
+            edit(x, y, cx, cy);
+            mouse_c = 1;
+            for (var i = 0; i < cb_edt_clicked_c; i++) {
+                cb_edt_clicked[i](x, y, chip);
+            }
+        }
+        mouseEvent.edt_tDown = edt_tDown;
+        function edt_tMove(e) {
+            var rect = e.target.getBoundingClientRect();
+            var x = e.changedTouches[0].pageX - (rect.left + window.pageXOffset);
+            var y = e.changedTouches[0].pageY - (rect.top + window.pageYOffset);
+            if (isiPad || isiPhone) {
+                y = touchY - window.pageYOffset * 2.4;
+            }
+            console.log(e);
+            x = Math.floor(x / 32);
+            y = Math.floor(y / 32);
+            var cx = x * 32;
+            var cy = y * 32;
+            edit(x, y, cx, cy);
+            for (var i = 0; i < cb_edt_moved_c; i++) {
+                cb_edt_moved[i](x, y, chip);
+            }
+        }
+        mouseEvent.edt_tMove = edt_tMove;
         function mUp(e) {
             mouse_c = 0;
+            mouse_c2 = 0;
         }
         mouseEvent.mUp = mUp;
         ;
+        function cvm_mDown(e) {
+            var rect = e.target.getBoundingClientRect();
+            var x = e.clientX - rect.left;
+            var y = e.clientY - rect.top;
+            x = Math.floor(x / 2);
+            y = Math.floor(y / 2);
+            var cx = x * 32 - 7 * 32;
+            var cy = y * 32 - 5 * 32;
+            edt_e.scrollTo(cx, cy);
+            mouse_c2 = 1;
+        }
+        mouseEvent.cvm_mDown = cvm_mDown;
+        function cvm_mMove(e) {
+            if (mouse_c2 == 1) {
+                var rect = e.target.getBoundingClientRect();
+                var x = e.clientX - rect.left;
+                var y = e.clientY - rect.top;
+                x = Math.floor(x / 2);
+                y = Math.floor(y / 2);
+                var cx = x * 32 - 7 * 32;
+                var cy = y * 32 - 5 * 32;
+                edt_e.scrollTo(cx, cy);
+            }
+        }
+        mouseEvent.cvm_mMove = cvm_mMove;
+        function cvm_tDown(e) {
+            var rect = e.target.getBoundingClientRect();
+            var x = e.clientX - rect.left;
+            var y = e.clientY - rect.top;
+            x = Math.floor(x / 2);
+            y = Math.floor(y / 2);
+            var cx = x * 32 - 10 * 32;
+            var cy = y * 32 - 10 * 32;
+            edt_e.scrollTo(cx, cy);
+            mouse_c2 = 1;
+        }
+        mouseEvent.cvm_tDown = cvm_tDown;
+        function cvm_tMove(e) {
+            var rect = e.target.getBoundingClientRect();
+            var x = e.changedTouches[0].clientX - rect.left;
+            var y = e.changedTouches[0].clientY - rect.top;
+            x = Math.floor(x / 2);
+            y = Math.floor(y / 2);
+            var cx = x * 32 - 7 * 32;
+            var cy = y * 32 - 5 * 32;
+            edt_e.scrollTo(cx, cy);
+        }
+        mouseEvent.cvm_tMove = cvm_tMove;
         function edit(x, y, cx, cy) {
             var chip_num;
             var mcX;
@@ -367,6 +460,7 @@ var mal;
         }
         init.prototype.createMalElements = function (edt, plt) {
             var elm_edt = document.getElementById(edt.id);
+            edt_e = elm_edt;
             for (var i = 0; i < 3; i++) {
                 var newCanvas = document.createElement("canvas");
                 newCanvas.id = "c" + i;
@@ -383,9 +477,16 @@ var mal;
             ctx1 = cvs1.getContext("2d");
             cvs2 = document.getElementById("c2");
             ctx2 = cvs2.getContext("2d");
-            document.getElementById("c2").addEventListener('mousedown', mouseEvent.edt_mDown, false);
-            document.getElementById("c2").addEventListener('mousemove', mouseEvent.edt_mMove, false);
-            document.addEventListener('mouseup', mouseEvent.mUp, false);
+            if (!isiPad && !isiPhone && !isAndroid && !isAndroidTablet) {
+                document.getElementById("c2").addEventListener('mousedown', mouseEvent.edt_mDown, false);
+                document.getElementById("c2").addEventListener('mousemove', mouseEvent.edt_mMove, false);
+                document.addEventListener('mouseup', mouseEvent.mUp, false);
+            }
+            else {
+                document.getElementById("c2").addEventListener('touchstart', mouseEvent.edt_tDown, false);
+                document.getElementById("c2").addEventListener('touchmove', mouseEvent.edt_tMove, false);
+                document.addEventListener('touchcancel', mouseEvent.mUp, false);
+            }
             var scrollHeight = elm_edt.scrollHeight;
             elm_edt.scrollTop = scrollHeight;
             var elm_plt1 = document.getElementById(plt["id-1"]);
@@ -458,6 +559,14 @@ var mal;
             cvs_wm.width = 360;
             cvs_wm.height = 60;
             cvs_wm.id = "_cmv";
+            if (!isiPad && !isiPhone && !isAndroid && !isAndroidTablet) {
+                cvs_wm.addEventListener('mousedown', mouseEvent.cvm_mDown, false);
+                cvs_wm.addEventListener('mousemove', mouseEvent.cvm_mMove, false);
+            }
+            else {
+                cvs_wm.addEventListener('touchstart', mouseEvent.cvm_tMove, false);
+                cvs_wm.addEventListener('touchmove', mouseEvent.cvm_tMove, false);
+            }
             elm_cmv.appendChild(cvs_wm);
             cvswm = cvs_wm;
             ctxwm = cvswm.getContext("2d");

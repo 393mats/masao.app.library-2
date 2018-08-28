@@ -14,7 +14,10 @@ module mal {
 
   let chip: number = 0;
   let chip2: string = "..";
+  let edt_e: any;
   let mouse_c: number = 0;
+  let mouse_c2: number = 0;
+
 
   let map: mapdata;                    // Declare mapdata
 
@@ -39,6 +42,22 @@ module mal {
   let cb_edt_clicked: any = [];
   let cb_edt_moved_c: number = 0;
   let cb_edt_moved: any = [];
+
+
+  // ---------------------------------------------------------
+  // Get UserAgent
+  // ---------------------------------------------------------
+  const ua: String = navigator.userAgent.toLowerCase();
+
+  // iPhone
+  const isiPhone: boolean = (ua.indexOf('iphone') > -1);
+  // iPad
+  const isiPad: boolean = (ua.indexOf('ipad') > -1);
+  // Android
+  const isAndroid: boolean = (ua.indexOf('android') > -1) && (ua.indexOf('mobile') > -1);
+  // Android Tablet
+  const isAndroidTablet: boolean = (ua.indexOf('android') > -1) && (ua.indexOf('mobile') == -1);
+
 
   // ---------------------------------------------------------
   // Useful functions
@@ -266,6 +285,9 @@ module mal {
   // ---------------------------------------------------------
   module mouseEvent {
 
+    let touchX: number = 0;
+    let touchY: number = 0;
+
     // - - - - - - - - - - - - - - - - - - - - -
     // Palette-1 mouse down event
     export function plt1_mDown(e: any): void {
@@ -352,10 +374,114 @@ module mal {
       }
 
     }
+
+    // Editor touch down event
+    export function edt_tDown(e: any): void {
+
+      // Get msp cordinates
+      const rect = e.target.getBoundingClientRect();
+      let x: number = e.changedTouches[0].pageX - (rect.left + window.pageXOffset);
+      let y: number = e.changedTouches[0].pageY - (rect.top + window.pageYOffset);
+      touchX = x;
+      touchY = y;
+      x = Math.floor(x / 32);
+      y = Math.floor(y / 32);
+      const cx: number = x * 32;  // X
+      const cy: number = y * 32;  // Y
+      edit(x, y, cx, cy);       // Edit map
+      mouse_c = 1;
+
+      for (let i = 0; i < cb_edt_clicked_c; i++) {
+        cb_edt_clicked[i](x, y, chip);
+      }
+
+    }
+
+    // Editor touch move event
+    export function edt_tMove(e: any): void {
+
+      // Get msp cordinates
+      const rect = e.target.getBoundingClientRect();
+      let x: number = e.changedTouches[0].pageX - (rect.left + window.pageXOffset);
+      let y: number = e.changedTouches[0].pageY - (rect.top + window.pageYOffset);
+      if (isiPad || isiPhone) {
+        y = touchY - window.pageYOffset * 2.4;
+      }
+
+      console.log(e);
+      x = Math.floor(x / 32);
+      y = Math.floor(y / 32);
+      const cx: number = x * 32;  // X
+      const cy: number = y * 32;  // Y
+      edit(x, y, cx, cy);       // Edit map
+
+      for (let i = 0; i < cb_edt_moved_c; i++) {
+        cb_edt_moved[i](x, y, chip);
+      }
+
+    }
+
     // Editor mouse up event
     export function mUp(e: any): void {
       mouse_c = 0;
+      mouse_c2 = 0;
     };
+
+    // - - - - - - - - - - - - - - - - - - - - -
+    // Complete map view mouse down event
+    export function cvm_mDown(e: any): void {
+      // Get msp cordinates
+      const rect = e.target.getBoundingClientRect();
+      let x: number = e.clientX - rect.left;
+      let y: number = e.clientY - rect.top;
+      x = Math.floor(x / 2);
+      y = Math.floor(y / 2);
+      const cx: number = x * 32 - 7 * 32;  // X
+      const cy: number = y * 32 - 5 * 32;  // Y
+
+      edt_e.scrollTo(cx, cy);
+      mouse_c2 = 1;
+    }
+    // Complete map view mouse move event
+    export function cvm_mMove(e: any): void {
+      if (mouse_c2 == 1) {
+        // Get msp cordinates
+        const rect = e.target.getBoundingClientRect();
+        let x: number = e.clientX - rect.left;
+        let y: number = e.clientY - rect.top;
+        x = Math.floor(x / 2);
+        y = Math.floor(y / 2);
+        const cx: number = x * 32 - 7 * 32;  // X
+        const cy: number = y * 32 - 5 * 32;  // Y
+        edt_e.scrollTo(cx, cy);
+      }
+    }
+    export function cvm_tDown(e: any): void {
+      // Get msp cordinates
+      const rect = e.target.getBoundingClientRect();
+      let x: number = e.clientX - rect.left;
+      let y: number = e.clientY - rect.top;
+      x = Math.floor(x / 2);
+      y = Math.floor(y / 2);
+      const cx: number = x * 32 - 10 * 32;  // X
+      const cy: number = y * 32 - 10 * 32;  // Y
+
+      edt_e.scrollTo(cx, cy);
+      mouse_c2 = 1;
+    }
+    // Complete map view touch move event
+    export function cvm_tMove(e: any): void {
+      // Get msp cordinates
+      const rect = e.target.getBoundingClientRect();
+      let x: number = e.changedTouches[0].clientX - rect.left;
+      let y: number = e.changedTouches[0].clientY - rect.top;
+      x = Math.floor(x / 2);
+      y = Math.floor(y / 2);
+      const cx: number = x * 32 - 7 * 32;  // X
+      const cy: number = y * 32 - 5 * 32;  // Y
+      edt_e.scrollTo(cx, cy);
+    }
+
 
     // Edit map data
     function edit(x: number, y: number, cx: number, cy: number) {
@@ -488,6 +614,7 @@ module mal {
     // Constructor
     protected constructor(obj: any) {
       map = new mapdata();
+
       this.createMalElements(obj.editor, obj["palette"]); // Create mal elements
     }
 
@@ -500,6 +627,7 @@ module mal {
 
       // Get place from element id to put editor
       const elm_edt: HTMLElement = document.getElementById(edt.id);
+      edt_e = elm_edt;
 
       // Create 3 canvas elements, background, main, and front layer.
       // c0: bg layer, c1: noraml layer, c2: grid and touch
@@ -527,10 +655,16 @@ module mal {
       ctx2 = cvs2.getContext("2d");
 
       // Mouse event
-      document.getElementById("c2").addEventListener('mousedown', mouseEvent.edt_mDown, false);
-      document.getElementById("c2").addEventListener('mousemove', mouseEvent.edt_mMove, false);
-      //document.getElementById("c2").addEventListener('touchmove', touchMove, false);
-      document.addEventListener('mouseup', mouseEvent.mUp, false);
+      if(!isiPad && !isiPhone && !isAndroid && !isAndroidTablet){
+        document.getElementById("c2").addEventListener('mousedown', mouseEvent.edt_mDown, false);
+        document.getElementById("c2").addEventListener('mousemove', mouseEvent.edt_mMove, false);
+        document.addEventListener('mouseup', mouseEvent.mUp, false);
+      }
+      else {
+        document.getElementById("c2").addEventListener('touchstart', mouseEvent.edt_tDown, false);
+        document.getElementById("c2").addEventListener('touchmove', mouseEvent.edt_tMove, false);
+        document.addEventListener('touchcancel', mouseEvent.mUp, false);
+      }
 
       // Get Editor's height and scroll down automatically
       const scrollHeight: number = elm_edt.scrollHeight;
@@ -679,6 +813,14 @@ module mal {
       cvs_wm.height = 60;                 // Chip height
       cvs_wm.id = "_cmv";                // Set id
 
+      if(!isiPad && !isiPhone && !isAndroid && !isAndroidTablet){
+        cvs_wm.addEventListener('mousedown', mouseEvent.cvm_mDown, false);
+        cvs_wm.addEventListener('mousemove', mouseEvent.cvm_mMove, false);
+      }else {
+        cvs_wm.addEventListener('touchstart', mouseEvent.cvm_tMove, false);
+        cvs_wm.addEventListener('touchmove', mouseEvent.cvm_tMove, false);
+      }
+
       // Put canvas on the palette element
       elm_cmv.appendChild(cvs_wm);
 
@@ -687,6 +829,7 @@ module mal {
       ctxwm = cvswm.getContext("2d");
 
       console.log("Loaded");
+
     }
 
   }
@@ -780,7 +923,7 @@ module mal {
         cb_edt_clicked++;
 
         break;
-        
+
       case "edt_moved":
         cb_edt_moved[cb_edt_moved_c] = func;
         cb_edt_moved++;

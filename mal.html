@@ -1,87 +1,93 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="./msapp.png">
   <link rel="stylesheet" href="./css/mal.css">
   <script type="text/javascript" src="./src/mal.js"></script>
   <title>masao.app.library-version2</title>
 </head>
+
 <body>
-  <!-- Editor -->
-  <div id="cmv"></div>
+    <div class="menu">
 
-  <br>
+  <button onclick="test3()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+            <path d="M0 0h24v24H0z" fill="none"/>
+            <path d="M3 5H1v16c0 1.1.9 2 2 2h16v-2H3V5zm18-4H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 16H7V3h14v14z"/>
+        </svg>
 
-  <div id="edt"></div>
+      </button>
+  <button onclick="test4()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+          <path d="M3 3v18h18V3H3zm8 16H5v-6h6v6zm0-8H5V5h6v6zm8 8h-6v-6h6v6zm0-8h-6V5h6v6z"/>
+          <path d="M0 0h24v24H0z" fill="none"/>
+      </svg>
+</button>
 
-  <br>
+</div>
 
-  <div id="plt1"></div>
+    <!-- Editor -->
+    <div id="cmv"></div>
 
-  <br>
 
-  <div id="plt2"></div>
+    <div id="edt"></div>
 
-  <br>
+    <div class="palette">
+      <div id="plt1"></div>
+      <div id="plt2"></div>
+    </div>
 
-  <button onclick="test()">サイズ変更（512px）</button>
+  <script>
+    new mal.init({
+      "editor": {
+        "id": "edt",
+        "grid": "1",
+        "map-view": "1",
+        "map-view-id": "cmv"
+      },
+      "palette": {
+        "id-1": "plt1",
+        "id-2": "plt2",
+        "parts": "./parts.png",
+        "mapchip": "./mapchip.gif"
+      }
+    });
 
-  <button onclick="test2()">コード出力</button>
+    function test3() {
+      var lm = mal.getLayerMode();
+      if (lm == 1) {
+        mal.switchLayer(0);
+        document.getElementById("plt1").style.display = "none";
+        document.getElementById("plt2").style.display = "flex";
+      } else {
+        mal.switchLayer(1);
+        document.getElementById("plt1").style.display = "flex";
+        document.getElementById("plt2").style.display = "none";
+      }
+    }
 
-  <button onclick="test3()">レイヤー切り替え</button>
+    function test4() {
+      var gr = mal.getGridMode();
+      if (gr == 1) mal.switchGrid(0);
+      else mal.switchGrid(1);
+    }
 
-  <button onclick="test4()">グリッド表示切り替え</button>
+    console.log(mal);
+    mal.switchLayer(1);
+    document.getElementById("plt1").style.display = "flex";
+    document.getElementById("plt2").style.display = "none";
 
-  <br>
+    document.oncontextmenu = function() {
+      return false;
+    };
 
-  <textarea name="source" id="source" cols="100" rows="20"></textarea>
-
-  <br>
-
-  <hr>
-  <a href="https://github.com/393mats/masao.app.library-2">Github</a>
-<script>
-
-new mal.init({
-  "editor": {
-    "id": "edt",
-    "grid": "1",
-    "map-view": "1",
-    "map-view-id": "cmv"
-  },
-  "palette": {
-    "id-1": "plt1",
-    "id-2": "plt2",
-    "parts": "./parts.png",
-    "mapchip": "./mapchip.gif"
-  }
-});
-
-function test(){
-  document.getElementById("plt1").style.width = "512px";
-  document.getElementById("plt2").style.width = "512px";
-}
-
-function test2(){
-  mal.getHTML();
-}
-
-function test3(){
-  var lm = mal.getLayerMode();
-  if(lm == 1) mal.switchLayer(0);
-  else mal.switchLayer(1);
-}
-
-function test4(){
-  var gr = mal.getGridMode();
-  if(gr == 1) mal.switchGrid(0);
-  else mal.switchGrid(1);
-}
-
-console.log(mal);
-</script>
+  </script>
 
 </body>
+
 </html>

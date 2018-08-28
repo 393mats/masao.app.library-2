@@ -34,7 +34,7 @@ This is an example:
 <div id="plt2"></div>
 ```
 
-And then, write an initialize method with the JS into <body\>.
+And then, write an Initialization method with the JS into <body\>.
 
 
 ```
@@ -61,7 +61,7 @@ new mal.init({
 
 ### mal.init(Data)
 
-Initialize method.
+Initialize editor.
 
 ### mal.add(Event name, Func)
 

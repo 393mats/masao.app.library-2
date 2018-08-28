@@ -1,62 +1,148 @@
-body {
-  background: silver;
+body, html {
+  position:relative;
+  background: #03A9F4;
+  margin:0 auto;
+  height:100%;
+  width:100%;
+  overflow: hidden;
 }
 
 #edt {
   width: 512px;
   height: 320px;
   background: cyan;
-  overflow: scroll;
+  overflow: hidden;
   border: solid 1px black;
   position: relative;
+  margin:0 auto;
 }
 
 
 #plt1 {
-  width: 800px;
+  width: 100%;
   height: auto;
-  background: cyan;
+  background: #B2EBF2;
   border: solid 1px black;
   position: relative;
   padding: 0px;
   margin: 0px;
-  display: -webkit-flex;
-  display: -moz-flex;
-  display: -ms-flex;
-  display: -o-flex;
   display: flex;
   flex-wrap: wrap;
 }
 
 #plt2 {
-  width: 800px;
+  width: 100%;
   height: auto;
-  background: cyan;
+  background: #B2EBF2;
   border: solid 1px black;
   position: relative;
   padding: 0px;
   margin: 0px;
+  display: none;
+  flex-wrap: wrap;
+}
+
+#_cmv{
+  width: 100%;
+  padding:0px;
+  margin: 0px;
+}
+
+#cmv {
+  width:360px;
+  height: auto;
+  background: cyan;
+  border: solid 1px black;
+  margin:0 auto;
   display: -webkit-flex;
   display: -moz-flex;
   display: -ms-flex;
   display: -o-flex;
   display: flex;
   flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
 }
-
-#cmv {
-  width: 360px;
-  height: 60px;
-  background: cyan;
-  border: solid 1px black;
-  padding: 0px;
-  margin: 0px;
-  display: block;
-}
-
 .pBox {
   position: relative;
   width: 32px;
   height: 32px;
-  box-sizing: border-box;
+}
+
+.palette{
+  display:block;
+  z-index:9;
+  width:512px;
+  height:160px;
+  overflow: scroll;
+  margin:0 auto;
+}
+
+.menu {
+  width:512px;
+  height: 32px;
+  display: block;
+  margin:0 auto;
+}
+
+button {
+  height: 32px;
+  width: 32px;
+  padding:3px;
+  margin:0px;
+  background:#0078D7;
+  fill:white;
+  border:none;
+}
+button:active {
+  background: #0063B1;
+}
+
+@media screen and (max-width: 480px) {
+  body, html {
+    position:fixed;
+  }
+
+  #edt, #plt1, #plt2, #cmv {
+    width:100%;
+    border: none;
+  }
+/*
+  .wrapper {
+    position: fixed;
+    top:0px;
+    height:100%;
+    width:100%;
+  }
+  */
+  #cmv {
+    border-bottom: solid 2px #0063B1;
+  }
+
+  #edt {
+    height: calc(100% - 192px);
+  }
+
+  #plt1, #plt2 {
+    height:96px;
+    overflow:scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .palette {
+    position:absolute;
+    height:96px;
+    width:100%;
+    bottom:0px;
+  }
+
+  .menu {
+    width:100%;
+    height: 32px;
+    display: block;
+  }
+
+  textarea {
+    display: none;
+  }
 }
