@@ -1,6 +1,6 @@
 # masao.app.library-2
 
-This is the Javascript library to make your Super Masao Editor on your website.
+This is the Javascript library to create your Super Masao Editor on your website.
 
 You can customize the editor with the HTML, JS and CSS.
 
@@ -14,7 +14,7 @@ Please import JS and CSS files into <head\>.
 
 ## Initialize
 
-Please make boxes to place editor components.
+Please make sections to place editor components.
 
 This is an example:
 ```
@@ -34,7 +34,7 @@ This is an example:
 <div id="plt2"></div>
 ```
 
-And then, write an Initialization method with the JS into <body\>.
+Write an Initialization method with the JS into <body\>.
 
 
 ```
